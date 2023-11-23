@@ -14,7 +14,6 @@ const UserSchema = new mongoose.Schema(
     businessName: {
       type: String,
     },
-
     isFirstTimeLogginin: {
       type: Boolean,
       default: false,

@@ -22,7 +22,7 @@ const generateOtpMethod = (
     lowerCaseAlphabets: isLowercaseAlphabet,
     upperCaseAlphabets: isUppercaseAlphabet,
     specialChars: false,
-    digits: true,
+    digits: true
   });
 
   return generateOtp;
@@ -37,7 +37,7 @@ export const registerAUser = async (req, res) => {
     const createUser = await userModel.create({
       email,
       password: hashPassword,
-      businessName,
+      businessName
     });
 
     if (createUser) {
@@ -50,7 +50,7 @@ export const registerAUser = async (req, res) => {
       await otpModel.create({
         otp: hashOtp,
         verificationKey,
-        email: email,
+        email: email
       });
 
       console.log("generated otp", generatedOtp);
@@ -59,7 +59,7 @@ export const registerAUser = async (req, res) => {
 
       res?.status(200).json({
         message: "User Created Successfully",
-        data: { user: createUser, email, verificationKey },
+        data: { user: createUser, email, verificationKey }
       });
     }
   } catch (error) {
@@ -97,7 +97,7 @@ export const signInUser = async (req, res, next) => {
               businessName: findUser?.businessName,
               isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
               isEmailVerified: findUser?.isEmailVerified,
-              createdAt: findUser?.createdAt,
+              createdAt: findUser?.createdAt
             },
             EnvironmentalVariables.ACCESS_SECRET_KEY,
             { expiresIn: "600s" }
@@ -106,7 +106,7 @@ export const signInUser = async (req, res, next) => {
           const refreshToken = jwt.sign(
             {
               _id: findUser?._id,
-              email: findUser?.email,
+              email: findUser?.email
             },
             EnvironmentalVariables.REFRESH_SECRET_KEY,
             { expiresIn: "2d" }
@@ -114,7 +114,7 @@ export const signInUser = async (req, res, next) => {
 
           const userData = {
             data: findUser,
-            token: { accesstoken: accesstoken, refreshToken: refreshToken },
+            token: { accesstoken: accesstoken, refreshToken: refreshToken }
           };
 
           res
@@ -158,7 +158,7 @@ export const createANewToken = async (req, res, next) => {
           isEmailVerified: findUser?.isEmailVerified,
           isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
 
-          createdAt: findUser?.createdAt,
+          createdAt: findUser?.createdAt
         },
         EnvironmentalVariables.ACCESS_SECRET_KEY,
         { expiresIn: "600s" }
@@ -167,14 +167,14 @@ export const createANewToken = async (req, res, next) => {
       const refreshToken = jwt.sign(
         {
           _id: findUser?._id,
-          email: findUser?.email,
+          email: findUser?.email
         },
         EnvironmentalVariables.REFRESH_SECRET_KEY,
         { expiresIn: "2d" }
       );
 
       const token = {
-        token: { accesstoken: accesstoken, refreshToken: refreshToken },
+        token: { accesstoken: accesstoken, refreshToken: refreshToken }
       };
 
       res.status(200).json({ message: "New token", data: token });
@@ -206,14 +206,20 @@ export const verifyEmail = async (req, res) => {
             { new: true }
           );
           await otpModel.deleteMany({ email });
-          res.status(400).json({ message: "Email Verification Completed" });
+          res
+            .status(200)
+            .json({ message: "Email Verification Completed", success: true });
         }
       } else {
-        res.status(400).json({ message: "Invalid Verification key" });
+        res
+          .status(400)
+          .json({ message: "Invalid Verification key", success: false });
       }
     }
   } catch (error) {
-    res.status(400).json({ message: "error", error: error.message });
+    res
+      .status(400)
+      .json({ message: "error", error: error.message, success: false });
   }
 };
 
@@ -230,15 +236,17 @@ export const resendOtp = async (req, res) => {
     await otpModel.create({
       otp: hashOtp,
       verificationKey,
-      email: email,
+      email: email
     });
 
     console.log(generatedOtp);
 
-    res
-      .status(201)
-      .json({ message: "Otp Resent", data: { verificationKey, email } });
+    res.status(201).json({
+      message: "A new OTP has been sent",
+      data: { verificationKey, email },
+      success: true
+    });
   } catch (error) {
-    res.status(400).json({ message: "error", error: error });
+    res.status(400).json({ message: "error", error: error, success: false });
   }
 };

@@ -12,6 +12,7 @@ const clientInvoice = new mongoose.Schema(
     },
     discount: {
       type: Number,
+      default: 0,
       required: true,
     },
     total: {
@@ -28,22 +29,26 @@ const clientInvoice = new mongoose.Schema(
     paymentAccountNumber: {
       type: String,
     },
+    paymentBankName: {
+      type: String,
+    },
     ussdPaymentCode: {
       type: Number,
     },
-    purchaseDate: {
+    purchasedDate: {
       type: Date,
       required: true,
     },
     productDescription: {
       type: String,
     },
+    currency: {
+      type: String,
+      default: "NGN",
+      required: true,
+    },
     clientId: {
       ref: "clients",
-      type: mongoose.Schema.Types.ObjectId,
-    },
-    userId: {
-      ref: "user",
       type: mongoose.Schema.Types.ObjectId,
     },
   },

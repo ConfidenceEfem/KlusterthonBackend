@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { EnvironmentalVariables } from "../config/EnvironmentalVariables";
+import { EnvironmentalVariables } from "../config/EnvironmentalVariables.js";
 
 export const checkUser = async (req, res, next) => {
   const authToken = req.headers.authorization;

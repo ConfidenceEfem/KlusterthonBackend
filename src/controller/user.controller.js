@@ -205,6 +205,7 @@ export const verifyEmail = async (req, res) => {
             { isEmailVerified: true },
             { new: true }
           );
+          await otpModel.deleteMany({ email });
           res.status(400).json({ message: "Email Verification Completed" });
         }
       } else {

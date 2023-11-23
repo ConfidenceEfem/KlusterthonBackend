@@ -4,10 +4,11 @@ import userModel from "../model/user.model.js";
 import jwt from "jsonwebtoken";
 import { EnvironmentalVariables } from "../config/EnvironmentalVariables.js";
 import otpGenerator from "otp-generator";
+import { otpModel } from "../model/otp.model.js";
 
-const bcyrptPassword = (password) => {
-  const saltPassword = bcrypt.genSalt(10);
-  const hashPassword = bcrypt.hash(password, saltPassword);
+const bcyrptPassword = async (password) => {
+  const saltPassword = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(password, saltPassword);
 
   return hashPassword;
 };
@@ -31,7 +32,7 @@ export const registerAUser = async (req, res) => {
   try {
     const { email, password, businessName } = req.body;
 
-    const hashPassword = bcyrptPassword(password);
+    const hashPassword = await bcyrptPassword(password);
 
     const createUser = await userModel.create({
       email,
@@ -42,7 +43,7 @@ export const registerAUser = async (req, res) => {
     if (createUser) {
       const generatedOtp = generateOtpMethod(6, false, false);
 
-      const hashOtp = bcyrptPassword(generatedOtp);
+      const hashOtp = await bcyrptPassword(generatedOtp);
 
       const verificationKey = generateOtpMethod(30, true, true);
 
@@ -56,12 +57,13 @@ export const registerAUser = async (req, res) => {
 
       // send otp through email smtp
 
-      res
-        ?.status(200)
-        .json({ message: "User Created Successfully", data: createUser });
+      res?.status(200).json({
+        message: "User Created Successfully",
+        data: { user: createUser, email, verificationKey },
+      });
     }
   } catch (error) {
-    res.status(400).json({ message: "Error", data: error });
+    res.status(400).json({ message: "Error", data: error.message });
   }
 };
 
@@ -72,45 +74,53 @@ export const signInUser = async (req, res, next) => {
     const findUser = await userModel.findOne({ email });
 
     if (!findUser) {
+      console.log("1hello");
+
       res.status(400).json({ message: "Incorrect Credentail" });
     } else {
-      const comparePassword = await bcrypt.compare(
-        password,
-        findUser?.password
-      );
-      if (comparePassword) {
-        res.status(400).json({ message: "Incorrect Credentail" });
+      if (!findUser?.isEmailVerified) {
+        res.status(400).json({ message: "Email not Verified" });
       } else {
-        const accesstoken = jwt.sign(
-          {
-            _id: findUser?._id,
-            email: findUser?.email,
-            userWallet: findUser?.userWallet,
-            businessName: findUser?.businessName,
-            isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
-            createdAt: findUser?.createdAt,
-          },
-          EnvironmentalVariables.ACCESS_SECRET_KEY,
-          { expiresIn: "600s" }
+        const comparePassword = await bcrypt.compare(
+          password,
+          findUser?.password
         );
 
-        const refreshToken = jwt.sign(
-          {
-            _id: findUser?._id,
-            email: findUser?.email,
-          },
-          EnvironmentalVariables.REFRESH_SECRET_KEY,
-          { expiresIn: "2d" }
-        );
+        if (!comparePassword) {
+          res.status(400).json({ message: "Incorrect Credentail" });
+        } else {
+          const accesstoken = jwt.sign(
+            {
+              _id: findUser?._id,
+              email: findUser?.email,
+              userWallet: findUser?.userWallet,
+              businessName: findUser?.businessName,
+              isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
+              isEmailVerified: findUser?.isEmailVerified,
+              createdAt: findUser?.createdAt,
+            },
+            EnvironmentalVariables.ACCESS_SECRET_KEY,
+            { expiresIn: "600s" }
+          );
 
-        const userData = {
-          data: findUser,
-          token: { accesstoken: accesstoken, refreshToken: refreshToken },
-        };
+          const refreshToken = jwt.sign(
+            {
+              _id: findUser?._id,
+              email: findUser?.email,
+            },
+            EnvironmentalVariables.REFRESH_SECRET_KEY,
+            { expiresIn: "2d" }
+          );
 
-        res
-          ?.status(200)
-          .json({ message: "User logged in successfully", data: userData });
+          const userData = {
+            data: findUser,
+            token: { accesstoken: accesstoken, refreshToken: refreshToken },
+          };
+
+          res
+            ?.status(200)
+            .json({ message: "User logged in successfully", data: userData });
+        }
       }
     }
   } catch (error) {
@@ -118,7 +128,7 @@ export const signInUser = async (req, res, next) => {
   }
 };
 
-export const createANewToken = async (req, res) => {
+export const createANewToken = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
 
@@ -132,48 +142,45 @@ export const createANewToken = async (req, res) => {
       }
     );
 
-    if (!verifyToken) {
-      res?.status(400).json({ message: "Incorrect Token" });
+    const decodeToken = jwt.decode(refreshToken);
+    console.log(decodeToken);
+
+    const findUser = await userModel.findOne({ email: decodeToken?.email });
+    if (!findUser) {
+      res.status(404).json({ message: "User not found" });
     } else {
-      const decodeToken = jwt.decode(refreshToken);
-      console.log(decodeToken);
+      const accesstoken = jwt.sign(
+        {
+          _id: findUser?._id,
+          email: findUser?.email,
+          userWallet: findUser?.userWallet,
+          businessName: findUser?.businessName,
+          isEmailVerified: findUser?.isEmailVerified,
+          isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
 
-      const findUser = await userModel.findOne({ email: decodeToken?.email });
-      if (!findUser) {
-        res.status(404).json({ message: "User not found" });
-      } else {
-        const accesstoken = jwt.sign(
-          {
-            _id: findUser?._id,
-            email: findUser?.email,
-            userWallet: findUser?.userWallet,
-            businessName: findUser?.businessName,
-            isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
+          createdAt: findUser?.createdAt,
+        },
+        EnvironmentalVariables.ACCESS_SECRET_KEY,
+        { expiresIn: "600s" }
+      );
 
-            createdAt: findUser?.createdAt,
-          },
-          EnvironmentalVariables.ACCESS_SECRET_KEY,
-          { expiresIn: "600s" }
-        );
+      const refreshToken = jwt.sign(
+        {
+          _id: findUser?._id,
+          email: findUser?.email,
+        },
+        EnvironmentalVariables.REFRESH_SECRET_KEY,
+        { expiresIn: "2d" }
+      );
 
-        const refreshToken = jwt.sign(
-          {
-            _id: findUser?._id,
-            email: findUser?.email,
-          },
-          EnvironmentalVariables.REFRESH_SECRET_KEY,
-          { expiresIn: "2d" }
-        );
+      const token = {
+        token: { accesstoken: accesstoken, refreshToken: refreshToken },
+      };
 
-        const token = {
-          token: { accesstoken: accesstoken, refreshToken: refreshToken },
-        };
-
-        res.status(200).json({ message: "New token", data: token });
-      }
+      res.status(200).json({ message: "New token", data: token });
     }
   } catch (error) {
-    res.status(400).json({ message: "error", error: error });
+    res.status(400).json({ message: "error", error: error.message });
   }
 };
 
@@ -193,12 +200,43 @@ export const verifyEmail = async (req, res) => {
         if (!rightOtp) {
           res.status(400).json({ message: "Incorrect OTP" });
         } else {
+          const findUser = await userModel.findOneAndUpdate(
+            { email },
+            { isEmailVerified: true },
+            { new: true }
+          );
           res.status(400).json({ message: "Email Verification Completed" });
         }
       } else {
         res.status(400).json({ message: "Invalid Verification key" });
       }
     }
+  } catch (error) {
+    res.status(400).json({ message: "error", error: error.message });
+  }
+};
+
+export const resendOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const generatedOtp = generateOtpMethod(6, false, false);
+
+    const hashOtp = await bcyrptPassword(generatedOtp);
+
+    const verificationKey = generateOtpMethod(30, true, true);
+
+    await otpModel.create({
+      otp: hashOtp,
+      verificationKey,
+      email: email,
+    });
+
+    console.log(generatedOtp);
+
+    res
+      .status(201)
+      .json({ message: "Otp Resent", data: { verificationKey, email } });
   } catch (error) {
     res.status(400).json({ message: "error", error: error });
   }

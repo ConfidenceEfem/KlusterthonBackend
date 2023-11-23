@@ -9,7 +9,7 @@ export const AppConfig = (app) => {
     .use(cors())
 
     .get("/", (req, res) => {
-      res.send("Welcome to Slutter Backend");
+      res.send("Welcome to Klustherton Backend");
     })
 
     .use("/", router)

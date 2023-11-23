@@ -5,6 +5,7 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "You're required to input email"],
+      unique: true,
     },
     password: {
       type: String,
@@ -15,6 +16,10 @@ const UserSchema = new mongoose.Schema(
     },
 
     isFirstTimeLogginin: {
+      type: Boolean,
+      default: false,
+    },
+    isEmailVerified: {
       type: Boolean,
       default: false,
     },

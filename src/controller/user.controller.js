@@ -113,7 +113,7 @@ export const signInUser = async (req, res, next) => {
           );
 
           const userData = {
-            data: findUser,
+            user: findUser,
             token: { accesstoken: accesstoken, refreshToken: refreshToken }
           };
 

@@ -100,7 +100,8 @@ export const signInUser = async (req, res, next) => {
               createdAt: findUser?.createdAt,
             },
             EnvironmentalVariables.ACCESS_SECRET_KEY,
-            { expiresIn: "600s" }
+            // { expiresIn: "600s" }
+            { expiresIn: "1d" }
           );
 
           const refreshToken = jwt.sign(
@@ -143,7 +144,6 @@ export const createANewToken = async (req, res, next) => {
     );
 
     const decodeToken = jwt.decode(refreshToken);
-    console.log(decodeToken);
 
     const findUser = await userModel.findOne({ email: decodeToken?.email });
     if (!findUser) {
@@ -161,7 +161,8 @@ export const createANewToken = async (req, res, next) => {
           createdAt: findUser?.createdAt,
         },
         EnvironmentalVariables.ACCESS_SECRET_KEY,
-        { expiresIn: "600s" }
+        // { expiresIn: "600s" }
+        { expiresIn: "1d" }
       );
 
       const refreshToken = jwt.sign(

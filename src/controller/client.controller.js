@@ -7,19 +7,35 @@ export const createNewClient = async (req, res) => {
   try {
     const { email, fullName, phoneNumber } = req.body;
 
-    const createClient = await clientModel.create({
+    const userId = req.user._id;
+
+    const findUser = await userModel.findById(userId);
+
+    const newClient = new clientModel({
       email,
       fullName,
       phoneNumber,
     });
 
-    if (!createClient) {
-      res.status(400).json({ message: "Failed in creating a client" });
-    } else {
-      res
-        .status(201)
-        .json({ message: "Client created succesfully", data: createClient });
-    }
+    newClient.userId = findUser;
+
+    newClient.save();
+
+    findUser?.clients.push(new mongoose.Types.ObjectId(newClient._id));
+
+    findUser.save();
+
+    res.status(201).json({ message: "new client", data: newClient });
+  } catch (error) {
+    res.status(400).json({ message: "Error", error: error.message });
+  }
+};
+
+export const getAllClient = async (req, res) => {
+  try {
+    const allClient = await clientModel.find();
+
+    res.status(201).json({ message: "All Client", data: allClient });
   } catch (error) {
     res.status(400).json({ message: "Error", error: error.message });
   }
@@ -27,9 +43,21 @@ export const createNewClient = async (req, res) => {
 
 export const getAllClientForOneUser = async (req, res) => {
   try {
-    const allClient = await clientModel.find({ email: req.user.email });
+    const allClient = await clientModel.find({ userId: req.user._id });
 
-    res.status(201).json({ message: "All Client", data: allClient });
+    res
+      .status(201)
+      .json({ message: "All Client for one User", data: allClient });
+  } catch (error) {
+    res.status(400).json({ message: "Error", error: error.message });
+  }
+};
+
+export const getOneClient = async (req, res) => {
+  try {
+    const findClient = await clientModel.findById(req.params.clientId);
+
+    res.status(201).json({ message: "One Client", data: findClient });
   } catch (error) {
     res.status(400).json({ message: "Error", error: error.message });
   }
@@ -43,7 +71,9 @@ export const deleteClientData = async (req, res) => {
 
     const findClientUser = await userModel.findById(deleteClient.userId);
 
-    await findClientUser.pull(new mongoose.Types.ObjectId(deleteClient._id));
+    await findClientUser?.clients?.pull(
+      new mongoose.Types.ObjectId(deleteClient._id)
+    );
 
     findClientUser.save();
 

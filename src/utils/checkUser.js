@@ -16,7 +16,7 @@ export const checkUser = async (req, res, next) => {
     } else {
       jwt.verify(
         jwtToken,
-        EnvironmentalVariables.SECRET_KEY,
+        EnvironmentalVariables.ACCESS_SECRET_KEY,
         (err, payload) => {
           if (err) {
             res.status(400).json({ message: "Incorrect token", err: err });

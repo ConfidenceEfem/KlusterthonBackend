@@ -25,16 +25,15 @@ const clientInvoice = new mongoose.Schema(
     },
     paymentLink: {
       type: String,
+      required: true,
     },
-    paymentAccountNumber: {
+    paymentAccessCode: {
       type: String,
     },
-    paymentBankName: {
+    paymentReferenceCode: {
       type: String,
     },
-    ussdPaymentCode: {
-      type: Number,
-    },
+
     purchasedDate: {
       type: Date,
       required: true,

@@ -73,9 +73,13 @@ const initailizePayment = async (
         email: clientEmail,
         currency: currency,
         // callback_url:"https://webhook.site/9d0b00ba-9a69-44fa-a43d-a82c33c36fdc",
-        meta: {
+        metadata: {
           invoiceId: invoiceId,
           clientId: clientId,
+          productName: productName,
+          description: description,
+          clientName: clientName,
+          clientPhoneNumber,
         },
       },
     })

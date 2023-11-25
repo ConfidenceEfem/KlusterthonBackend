@@ -14,7 +14,7 @@ const ClientTransactionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "clientInvoice",
     },
-    payeename: {
+    clientName: {
       type: String,
       // required: true,
     },

@@ -46,11 +46,59 @@ export const getOneTransaction = async (req, res) => {
     );
     res
       .status(200)
+      .json({ message: "One Transactions", data: allTransactions });
+  } catch (error) {
+    res.status(400).json({
+      message: "error",
+      error: error.message,
+    });
+  }
+};
+
+export const getAllTransaction = async (req, res) => {
+  try {
+    const allTransactions = await clientTransactionModel.find();
+    res
+      .status(200)
       .json({ message: "All Transactions", data: allTransactions });
   } catch (error) {
     res.status(400).json({
       message: "error",
       error: error.message,
     });
+  }
+};
+
+export const createTransaction = async (
+  clientInvoiceId,
+  userId,
+  clientId,
+  clientName,
+  productName,
+  email,
+  amount,
+  currency,
+  paymentStatus,
+  paymentGateway,
+  transactionId
+) => {
+  try {
+    const transaction = await clientTransactionModel.create({
+      userId: userId,
+      clientId,
+      clientInvoiceId,
+      clientName,
+      productName,
+      email,
+      amount,
+      currency,
+      paymentStatus,
+      paymentGateway,
+      transactionId,
+    });
+
+    return transaction;
+  } catch (error) {
+    console.log("error while creating transaction", error);
   }
 };

@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { EnvironmentalVariables } from "../config/EnvironmentalVariables.js";
 import otpGenerator from "otp-generator";
 import { otpModel } from "../model/otp.model.js";
+import { sendEmailToUsers } from "../config/sendMail.js";
 
 const bcyrptPassword = async (password) => {
   const saltPassword = await bcrypt.genSalt(10);
@@ -52,6 +53,8 @@ export const registerAUser = async (req, res) => {
         verificationKey,
         email: email,
       });
+
+      await sendEmailToUsers(email, generatedOtp, res);
 
       console.log("generated otp", generatedOtp);
 
@@ -238,6 +241,8 @@ export const resendOtp = async (req, res) => {
       verificationKey,
       email: email,
     });
+
+    await sendEmailToUsers(email, generatedOtp, res);
 
     console.log(generatedOtp);
 

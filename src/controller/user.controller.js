@@ -22,7 +22,7 @@ const generateOtpMethod = (
     lowerCaseAlphabets: isLowercaseAlphabet,
     upperCaseAlphabets: isUppercaseAlphabet,
     specialChars: false,
-    digits: true,
+    digits: true
   });
 
   return generateOtp;
@@ -37,7 +37,7 @@ export const registerAUser = async (req, res) => {
     const createUser = await userModel.create({
       email,
       password: hashPassword,
-      businessName,
+      businessName
     });
 
     if (createUser) {
@@ -50,7 +50,7 @@ export const registerAUser = async (req, res) => {
       await otpModel.create({
         otp: hashOtp,
         verificationKey,
-        email: email,
+        email: email
       });
 
       console.log("generated otp", generatedOtp);
@@ -59,7 +59,7 @@ export const registerAUser = async (req, res) => {
 
       res?.status(200).json({
         message: "User Created Successfully",
-        data: { user: createUser, email, verificationKey },
+        data: { user: createUser, email, verificationKey }
       });
     }
   } catch (error) {
@@ -70,7 +70,6 @@ export const registerAUser = async (req, res) => {
 export const signInUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
     const findUser = await userModel.findOne({ email });
 
     if (!findUser) {
@@ -78,50 +77,49 @@ export const signInUser = async (req, res, next) => {
 
       res.status(400).json({ message: "Incorrect Credentail" });
     } else {
-      if (!findUser?.isEmailVerified) {
-        res.status(400).json({ message: "Email not Verified" });
+      // if (!findUser?.isEmailVerified) {
+      //   res.status(400).json({ message: "Email not Verified" });
+      // }
+      const comparePassword = await bcrypt.compare(
+        password,
+        findUser?.password
+      );
+
+      if (!comparePassword) {
+        res.status(400).json({ message: "Incorrect Credentail" });
       } else {
-        const comparePassword = await bcrypt.compare(
-          password,
-          findUser?.password
+        const accesstoken = jwt.sign(
+          {
+            _id: findUser?._id,
+            email: findUser?.email,
+            userWallet: findUser?.userWallet,
+            businessName: findUser?.businessName,
+            isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
+            isEmailVerified: findUser?.isEmailVerified,
+            createdAt: findUser?.createdAt
+          },
+          EnvironmentalVariables.ACCESS_SECRET_KEY,
+          // { expiresIn: "600s" }
+          { expiresIn: "1d" }
         );
 
-        if (!comparePassword) {
-          res.status(400).json({ message: "Incorrect Credentail" });
-        } else {
-          const accesstoken = jwt.sign(
-            {
-              _id: findUser?._id,
-              email: findUser?.email,
-              userWallet: findUser?.userWallet,
-              businessName: findUser?.businessName,
-              isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
-              isEmailVerified: findUser?.isEmailVerified,
-              createdAt: findUser?.createdAt,
-            },
-            EnvironmentalVariables.ACCESS_SECRET_KEY,
-            // { expiresIn: "600s" }
-            { expiresIn: "1d" }
-          );
+        const refreshToken = jwt.sign(
+          {
+            _id: findUser?._id,
+            email: findUser?.email
+          },
+          EnvironmentalVariables.REFRESH_SECRET_KEY,
+          { expiresIn: "2d" }
+        );
 
-          const refreshToken = jwt.sign(
-            {
-              _id: findUser?._id,
-              email: findUser?.email,
-            },
-            EnvironmentalVariables.REFRESH_SECRET_KEY,
-            { expiresIn: "2d" }
-          );
+        const userData = {
+          user: findUser,
+          token: { accesstoken: accesstoken, refreshToken: refreshToken }
+        };
 
-          const userData = {
-            data: findUser,
-            token: { accesstoken: accesstoken, refreshToken: refreshToken },
-          };
-
-          res
-            ?.status(200)
-            .json({ message: "User logged in successfully", data: userData });
-        }
+        res
+          ?.status(200)
+          .json({ message: "User logged in successfully", data: userData });
       }
     }
   } catch (error) {
@@ -163,7 +161,7 @@ export const createANewToken = async (req, res, next) => {
           isEmailVerified: findUser?.isEmailVerified,
           isFirstTimeLogginin: findUser?.isFirstTimeLogginin,
 
-          createdAt: findUser?.createdAt,
+          createdAt: findUser?.createdAt
         },
         EnvironmentalVariables.ACCESS_SECRET_KEY,
         // { expiresIn: "600s" }
@@ -173,14 +171,14 @@ export const createANewToken = async (req, res, next) => {
       const refreshToken = jwt.sign(
         {
           _id: findUser?._id,
-          email: findUser?.email,
+          email: findUser?.email
         },
         EnvironmentalVariables.REFRESH_SECRET_KEY,
         { expiresIn: "2d" }
       );
 
       const token = {
-        token: { accesstoken: accesstoken, refreshToken: refreshToken },
+        token: { accesstoken: accesstoken, refreshToken: refreshToken }
       };
 
       res.status(200).json({ message: "New token", data: token });
@@ -236,7 +234,7 @@ export const resendOtp = async (req, res) => {
     await otpModel.create({
       otp: hashOtp,
       verificationKey,
-      email: email,
+      email: email
     });
 
     console.log(generatedOtp);
@@ -244,7 +242,7 @@ export const resendOtp = async (req, res) => {
     res.status(201).json({
       message: "Otp Resent",
       data: { verificationKey, email },
-      success: true,
+      success: true
     });
   } catch (error) {
     res.status(400).json({ message: "error", error: error, success: false });

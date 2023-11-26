@@ -5,7 +5,7 @@ import {
   registerAUser,
   resendOtp,
   signInUser,
-  verifyEmail,
+  verifyEmail
 } from "../controller/user.controller.js";
 import { checkUser } from "../utils/checkUser.js";
 

@@ -9,24 +9,19 @@ const oAuthPass = new google.auth.OAuth2(
 );
 
 oAuthPass.setCredentials({
-  refresh_token: EnvironmentalVariables.REFRESH_TOKEN,
+  refresh_token: EnvironmentalVariables.REFRESH_TOKEN
 });
 
 export const sendEmailToUsers = async (email, otp, res) => {
   try {
     console.log("hello");
-    const createToken = await oAuthPass.getAccessToken();
 
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
       auth: {
-        type: "OAuth2",
-        user: "smartdevopss@gmail.com",
-        clientId: EnvironmentalVariables.CLIENT_ID,
-        clientSecret: EnvironmentalVariables.CLIENT_SECRET,
-        refreshToken: EnvironmentalVariables.REFRESH_TOKEN,
-        accessToken: createToken.token,
-      },
+        user: EnvironmentalVariables.MAIL_USERNAME,
+        pass: EnvironmentalVariables.MAIL_PSWD
+      }
     });
 
     console.log("hello1");
@@ -35,7 +30,7 @@ export const sendEmailToUsers = async (email, otp, res) => {
       from: `Auth Pratice <"confidenceefem1@gmail.com">`,
       to: email,
       subject: `${"Email Verification"}`,
-      html: `Hello there,</b> <br/> This is your OTP to Verify your email on <b>Beta Finance</b>: ${otp}.<br/> <i>OTP expires in 5 minutes time. <br/> Thanks, from Beta Finance Team</i> `,
+      html: `Hello there,</b> <br/> This is your OTP to Verify your email on <b>Beta Finance</b>: ${otp}.<br/> <i>OTP expires in 5 minutes time. <br/> Thanks, from Beta Finance Team</i> `
     };
 
     const result = transporter.sendMail(mailOptions, (err, info) => {

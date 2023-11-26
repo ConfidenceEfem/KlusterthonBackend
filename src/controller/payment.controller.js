@@ -115,7 +115,7 @@ export const verifyTransaction = async (req, res) => {
     const referenceId = req.params.referenceId;
     const invoiceId = req.params.invoiceId;
 
-    console.log(invoiceId);
+    // console.log(invoiceId);
 
     const findTransaction = await clientTransactionModel.findOne({
       transactionId: referenceId,
@@ -128,7 +128,7 @@ export const verifyTransaction = async (req, res) => {
         .findById(invoiceId)
         .populate({ path: "clientId", populate: { path: "userId" } });
 
-      console.log("populated invoice data", findInvoice);
+      // console.log("populated invoice data", findInvoice);
 
       const options = {
         url:
@@ -196,7 +196,7 @@ export const verifyTransaction = async (req, res) => {
                 updatedWallet?.balance
               );
 
-              console.log(response?.data);
+              // console.log(response?.data);
 
               res.status(201).json({ message: "data", data: response?.data });
             }
@@ -240,15 +240,11 @@ export const makeWithdrawal = async (req, res) => {
 
     const userWallet = await createUserWallet(req.user._id);
 
-    console.log("user wallet", userWallet);
-    console.log("finduser", findUser);
-
     if (findUser.userWallet < amount) {
       res.status(400).json({ message: "Insufficient balance" });
     } else {
       // create recipient
 
-      console.log("hello");
       const { data: recipientData } = await got
         .post("https://api.paystack.co/transferrecipient", {
           headers: headers,
@@ -260,8 +256,6 @@ export const makeWithdrawal = async (req, res) => {
           },
         })
         .json();
-      console.log("hello1");
-      console.log("recipient data", recipientData);
 
       // initialize transfer
 
@@ -276,18 +270,12 @@ export const makeWithdrawal = async (req, res) => {
         })
         .json();
 
-      console.log("initiate transfer data", initiateTransfer?.data);
-
       const { currency, transfer_code } = initiateTransfer.data;
-
-      console.log("hello2");
 
       const updatedWallet = await updatatingeWallet(
         req.user._id,
         -(amount / 100)
       );
-
-      console.log("hello3");
 
       await userModel.findByIdAndUpdate(
         req.user._id,
@@ -297,8 +285,6 @@ export const makeWithdrawal = async (req, res) => {
         { new: true }
       );
 
-      console.log("hello4");
-
       await createWalletTransaction(
         "debit",
         amount,
@@ -306,8 +292,6 @@ export const makeWithdrawal = async (req, res) => {
         userWallet?.balance,
         updatedWallet?.balance
       );
-
-      console.log("hello5");
 
       await withdrawalTransaction(
         accountNumber,
@@ -321,7 +305,6 @@ export const makeWithdrawal = async (req, res) => {
         transfer_code,
         findUser?._id
       );
-      console.log("hello6");
 
       res.status(200).json({
         message: "transfer pending. You will recieve it in a an hour time",
@@ -345,10 +328,10 @@ export const finalizeWithdrawal = async (req, res) => {
     );
 
     const finalizeTransfer = await got
-      .post(`https://api.paystack.co//transfer/finalize_transfer`, {
+      .post(`https://api.paystack.co/transfer/finalize_transfer`, {
         headers: headers,
         json: {
-          transfer_code: findWithdrawalTransaction.transfer_code,
+          transfer_code: findWithdrawalTransaction?.transfer_code,
           otp: otp,
         },
       })

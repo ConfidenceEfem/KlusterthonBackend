@@ -15,10 +15,6 @@ const UserSchema = new mongoose.Schema(
       type: String,
     },
 
-    isFirstTimeLogginin: {
-      type: Boolean,
-      default: false,
-    },
     isEmailVerified: {
       type: Boolean,
       default: false,

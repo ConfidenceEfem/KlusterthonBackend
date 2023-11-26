@@ -8,12 +8,10 @@ const clientInvoice = new mongoose.Schema(
     },
     amount: {
       type: Number,
-      required: true,
     },
     discount: {
       type: Number,
       default: 0,
-      required: true,
     },
     total: {
       type: Number,
@@ -44,7 +42,6 @@ const clientInvoice = new mongoose.Schema(
     currency: {
       type: String,
       default: "NGN",
-      required: true,
     },
     clientId: {
       ref: "clients",

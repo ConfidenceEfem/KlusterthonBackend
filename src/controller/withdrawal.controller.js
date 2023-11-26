@@ -25,6 +25,20 @@ export const getAllWithdrawalForOneUser = async (req, res) => {
     res.status(400).json({ message: "error", error });
   }
 };
+// all with withdraws for a specific user
+export const getCurrentUserWithdrawal = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const allWithdraw = await withdrawalModel.find({ userId: userId });
+
+    res
+      .status(201)
+      .json({ message: "All withdraws for One User", data: allWithdraw });
+  } catch (error) {
+    res.status(400).json({ message: "error", error });
+  }
+};
 
 // all with withdraws for a specific user
 export const getOneWithdraw = async (req, res) => {

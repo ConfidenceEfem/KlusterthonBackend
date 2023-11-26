@@ -94,8 +94,7 @@ export const createClientInvoice = async (req, res) => {
   try {
     const {
       productName,
-      amount,
-      discount,
+
       total,
       purchasedDate,
       productDescription,
@@ -106,8 +105,7 @@ export const createClientInvoice = async (req, res) => {
 
     const createInvoice = new clientInvoiceModel({
       productName,
-      amount,
-      discount,
+
       total,
       purchasedDate,
       productDescription,

@@ -35,7 +35,7 @@ const ClientTransactionSchema = new mongoose.Schema(
     },
     paymentStatus: {
       type: String,
-      enum: ["success", "pending", "failed"],
+      enum: ["success", "pending", "failed", "abandoned"],
     },
     paymentGateway: {
       type: String,

@@ -41,7 +41,7 @@ export const registerAUser = async (req, res) => {
     });
 
     if (createUser) {
-      const generatedOtp = generateOtpMethod(6, false, false);
+      const generatedOtp = generateOtpMethod(4, false, false);
 
       const hashOtp = await bcyrptPassword(generatedOtp);
 
@@ -146,6 +146,11 @@ export const createANewToken = async (req, res, next) => {
     const decodeToken = jwt.decode(refreshToken);
 
     const findUser = await userModel.findOne({ email: decodeToken?.email });
+
+    const { password, ...userData } = findUser._doc;
+
+    console.log("user data", userData);
+
     if (!findUser) {
       res.status(404).json({ message: "User not found" });
     } else {
@@ -222,7 +227,7 @@ export const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const generatedOtp = generateOtpMethod(6, false, false);
+    const generatedOtp = generateOtpMethod(4, false, false);
 
     const hashOtp = await bcyrptPassword(generatedOtp);
 
@@ -236,10 +241,26 @@ export const resendOtp = async (req, res) => {
 
     console.log(generatedOtp);
 
-    res
-      .status(201)
-      .json({ message: "Otp Resent", data: { verificationKey, email } });
+    res.status(201).json({
+      message: "Otp Resent",
+      data: { verificationKey, email },
+      success: true,
+    });
   } catch (error) {
-    res.status(400).json({ message: "error", error: error });
+    res.status(400).json({ message: "error", error: error, success: false });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const currentUser = await userModel.findById(userId);
+    res
+      .status(200)
+      .json({ message: "Current User", data: currentUser, success: true });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "error", error: error.message, success: false });
   }
 };

@@ -3,7 +3,7 @@ import {
   getAllWithdrawal,
   getAllWithdrawalForOneUser,
   getOneWithdraw,
-} from "../controller/withdrawal.controller";
+} from "../controller/withdrawal.controller.js";
 
 const withDrawRouter = Router();
 

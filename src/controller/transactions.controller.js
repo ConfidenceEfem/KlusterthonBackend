@@ -60,7 +60,7 @@ export const getAllTransaction = async (req, res) => {
     const allTransactions = await clientTransactionModel.find();
     res
       .status(200)
-      .json({ message: "All Transactions", data: allTransactions });
+      .json({ message: "All Transactions on the app", data: allTransactions });
   } catch (error) {
     res.status(400).json({
       message: "error",
@@ -83,7 +83,9 @@ export const createTransaction = async (
   transactionId
 ) => {
   try {
-    const transaction = await clientTransactionModel.create({
+    const findClient = await clientModel.findById(clientId);
+
+    const transaction = new clientTransactionModel({
       userId: userId,
       clientId,
       clientInvoiceId,
@@ -96,6 +98,14 @@ export const createTransaction = async (
       paymentGateway,
       transactionId,
     });
+
+    transaction.save();
+
+    findClient.clientTransactionHistory.push(
+      new mongoose.Types.ObjectId(transaction._id)
+    );
+
+    findClient.save();
 
     return transaction;
   } catch (error) {

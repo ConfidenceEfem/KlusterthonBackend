@@ -115,6 +115,8 @@ export const verifyTransaction = async (req, res) => {
     const referenceId = req.params.referenceId;
     const invoiceId = req.params.invoiceId;
 
+    console.log(invoiceId);
+
     const findTransaction = await clientTransactionModel.findOne({
       transactionId: referenceId,
     });
@@ -152,49 +154,44 @@ export const verifyTransaction = async (req, res) => {
               gateway_response,
               customer,
               currency,
-              channel,
+              metadata,
             } = response?.data;
 
-            if (
-              status === "abandoned" ||
-              gateway_response === "The transaction was not completed"
-            ) {
+            if (status !== "success") {
               console.log("transaction incomplete");
               res.status(400).json({ message: gateway_response });
             } else {
-              const userWallet = await createUserWallet(
-                findInvoice?.clientId?.userId?._id
-              );
+              const userWallet = await createUserWallet(metadata?.userId);
 
               const updatedWallet = await updatatingeWallet(
-                findInvoice?.clientId?.userId?._id,
+                metadata?.userId,
                 amount / 100
               );
 
               await userModel.findByIdAndUpdate(
-                findInvoice?.clientId?.userId?._id,
+                metadata?.userId,
                 {
-                  $inc: { userWallet: amount },
+                  $inc: { userWallet: amount / 100 },
                 },
                 { new: true }
               );
 
               await createTransaction(
-                "invoiceId",
-                findInvoice?.clientId?.userId?._id,
-                "clientId",
-                "clientName",
-                "productName",
+                metadata?.invoiceId,
+                metadata?.userId,
+                metadata?.clientId,
+                metadata?.clientName,
+                metadata?.productName,
                 customer?.email,
                 amount / 100,
                 currency,
-                "paymentStatus"
+                status
               );
 
               await createWalletTransaction(
                 "credit",
                 amount / 100,
-                findInvoice?.clientId?.userId?._id,
+                metadata?.userId,
                 userWallet?.balance,
                 updatedWallet?.balance
               );
@@ -210,7 +207,7 @@ export const verifyTransaction = async (req, res) => {
   } catch (error) {
     res
       .status(400)
-      .json({ message: "Error verifying transaction", error: error });
+      .json({ message: "Error verifying transaction", error: error.message });
   }
 };
 
@@ -239,14 +236,19 @@ export const makeWithdrawal = async (req, res) => {
   try {
     const { accountName, accountNumber, bankCode, amount } = req.body;
 
-    const findUser = await userModel.findById(req.params._id);
+    const findUser = await userModel.findById(req.user._id);
 
-    const userWallet = await createUserWallet(findUser._id);
+    const userWallet = await createUserWallet(req.user._id);
 
-    if (findUser.userWallet < amount || userWallet.balance < amount) {
+    console.log("user wallet", userWallet);
+    console.log("finduser", findUser);
+
+    if (findUser.userWallet < amount) {
       res.status(400).json({ message: "Insufficient balance" });
     } else {
       // create recipient
+
+      console.log("hello");
       const { data: recipientData } = await got
         .post("https://api.paystack.co/transferrecipient", {
           headers: headers,
@@ -258,8 +260,8 @@ export const makeWithdrawal = async (req, res) => {
           },
         })
         .json();
-
-      console.log(recipientData);
+      console.log("hello1");
+      console.log("recipient data", recipientData);
 
       // initialize transfer
 
@@ -269,35 +271,43 @@ export const makeWithdrawal = async (req, res) => {
           json: {
             source: "balance",
             amount: amount * 100,
-            recipient: recipientData?.data?.recipient_code,
+            recipient: recipientData?.recipient_code,
           },
         })
         .json();
 
-      console.log(initiateTransfer?.data);
+      console.log("initiate transfer data", initiateTransfer?.data);
 
       const { currency, transfer_code } = initiateTransfer.data;
 
+      console.log("hello2");
+
       const updatedWallet = await updatatingeWallet(
-        findInvoice?.clientId?.userId?._id,
-        amount / 100
+        req.user._id,
+        -(amount / 100)
       );
 
+      console.log("hello3");
+
       await userModel.findByIdAndUpdate(
-        findInvoice?.clientId?.userId?._id,
+        req.user._id,
         {
-          $inc: { userWallet: amount },
+          $inc: { userWallet: -amount },
         },
         { new: true }
       );
+
+      console.log("hello4");
 
       await createWalletTransaction(
         "debit",
         amount,
         findUser._id,
         userWallet?.balance,
-        updatedWallet.balance
+        updatedWallet?.balance
       );
+
+      console.log("hello5");
 
       await withdrawalTransaction(
         accountNumber,
@@ -311,13 +321,16 @@ export const makeWithdrawal = async (req, res) => {
         transfer_code,
         findUser?._id
       );
+      console.log("hello6");
 
       res.status(200).json({
-        message: "transfer penng. You will recieve it in a an hour time",
+        message: "transfer pending. You will recieve it in a an hour time",
       });
     }
   } catch (error) {
-    res.status(400).json({ message: "Error making withdrawal", error: error });
+    res
+      .status(400)
+      .json({ message: "Error making withdrawal", error: error.message });
   }
 };
 
@@ -327,7 +340,7 @@ export const finalizeWithdrawal = async (req, res) => {
 
     const { otp } = req.body;
 
-    const findWithdrawalTransaction = await withdrawalModel.findById(
+    const findWithdrawalTransaction = await withdrawalModel?.findById(
       withdrawalId
     );
 
@@ -351,8 +364,9 @@ export const finalizeWithdrawal = async (req, res) => {
       .status(201)
       .json({ message: "Transfer Successful", data: finalizeTransfer });
   } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error while finalizing withdrawal", error: error });
+    res.status(400).json({
+      message: "Error while finalizing withdrawal",
+      error: error.message,
+    });
   }
 };

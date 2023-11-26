@@ -59,7 +59,8 @@ const initailizePayment = async (
   clientPhoneNumber,
   clientName,
   productName,
-  description
+  description,
+  userId
 ) => {
   const randowTxRef = Date.now().toString();
   const response = await got
@@ -80,6 +81,7 @@ const initailizePayment = async (
           description: description,
           clientName: clientName,
           clientPhoneNumber,
+          userId,
         },
       },
     })
@@ -123,7 +125,8 @@ export const createClientInvoice = async (req, res) => {
       findClient?.phoneNumber,
       findClient.fullName,
       productName,
-      productDescription
+      productDescription,
+      findClient?.userId
     );
 
     createInvoice.paymentLink = makePayment?.authorization_url;

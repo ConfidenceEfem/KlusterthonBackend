@@ -241,7 +241,8 @@ export const resendOtp = async (req, res) => {
 
     res.status(201).json({
       message: "Otp Resent",
-      data: { verificationKey, email, otp: generatedOtp },
+
+      data: { verificationKey, email },
       success: true,
     });
   } catch (error) {

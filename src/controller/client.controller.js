@@ -14,7 +14,7 @@ export const createNewClient = async (req, res) => {
     const newClient = new clientModel({
       email,
       fullName,
-      phoneNumber,
+      phoneNumber
     });
 
     newClient.userId = findUser;

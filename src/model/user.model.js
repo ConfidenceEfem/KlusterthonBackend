@@ -5,34 +5,34 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "You're required to input email"],
-      unique: true,
+      unique: true
     },
     password: {
       type: String,
-      required: [true, "You're required to input password"],
+      required: [true, "You're required to input password"]
     },
     businessName: {
-      type: String,
+      type: String
     },
 
     isEmailVerified: {
       type: Boolean,
-      default: false,
+      default: false
     },
 
     clients: [
       {
         ref: "clients",
-        type: mongoose.Schema.Types.ObjectId,
-      },
+        type: mongoose.Schema.Types.ObjectId
+      }
     ],
     userWallet: {
       type: Number,
-      default: 0,
-    },
+      default: 0
+    }
   },
   {
-    timestamps: true,
+    timestamps: true
   }
 );
 

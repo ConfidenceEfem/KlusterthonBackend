@@ -4,14 +4,14 @@ import {
   deleteClientData,
   getAllClient,
   getAllClientForOneUser,
-  getOneClient,
+  getOneClient
 } from "../controller/client.controller.js";
 import { checkUser } from "../utils/checkUser.js";
 
 const clientRouter = Router();
 
 clientRouter.post("/add", checkUser, createNewClient);
-clientRouter.get("/oneUser", checkUser, getAllClientForOneUser);
+clientRouter.post("/oneUser", checkUser, getAllClientForOneUser);
 clientRouter.get("/", checkUser, getAllClient);
 clientRouter.get("/:clientId", checkUser, getOneClient);
 clientRouter.delete("/:clientId/remove", checkUser, deleteClientData);

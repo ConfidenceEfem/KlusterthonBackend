@@ -79,18 +79,19 @@ export const signInUser = async (req, res, next) => {
       console.log("incorrect");
       res.status(400).json({ message: "Incorrect Credentail" });
     } else {
-      if (!findUser?.isEmailVerified) {
-        res.status(400).json({ message: "Email not Verified" });
-      } else {
-        const comparePassword = await bcrypt.compare(
-          password,
-          findUser?.password
-        );
+      const comparePassword = await bcrypt.compare(
+        password,
+        findUser?.password
+      );
 
-        if (!comparePassword) {
-          res.status(400).json({ message: "Incorrect Credentail" });
+      if (!comparePassword) {
+        res.status(400).json({ message: "Incorrect Credentail" });
+      } else {
+        if (!findUser?.isEmailVerified) {
+          res
+            .status(400)
+            .json({ message: "Email not Verified", success: false });
         } else {
-          // removing password from user data from database
           const { password, ...userDataFromDB } = findUser._doc;
 
           const accesstoken = jwt.sign(

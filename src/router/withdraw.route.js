@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  approveTransfer,
   disableOtp,
   finalizeDisableOtp,
   getAllWithdrawal,
@@ -16,6 +17,7 @@ withDrawRouter.get("/user/:userId", getAllWithdrawalForOneUser);
 withDrawRouter.get("/:withdrawId", getOneWithdraw);
 withDrawRouter.post("/disable-otp", disableOtp);
 withDrawRouter.post("/disable-otp/finalize", finalizeDisableOtp);
+withDrawRouter.post("/approve", approveTransfer);
 withDrawRouter.get("/current-user", checkUser, getCurrentUserWithdrawal);
 
 export default withDrawRouter;

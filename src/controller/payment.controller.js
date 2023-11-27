@@ -106,6 +106,8 @@ const withdrawalTransaction = async (
       userId,
       recipient_code,
       reference,
+      isPaymentCompleted:
+        status === "received" ? true : status === "success" ? true : false,
     });
 
     return transaction;
@@ -278,7 +280,8 @@ export const makeWithdrawal = async (req, res) => {
 
       console.log("initaite transfer done", initiateTransfer);
 
-      const { currency, transfer_code, reference } = initiateTransfer.data;
+      const { currency, transfer_code, reference, status } =
+        initiateTransfer.data;
 
       const updatedWallet = await updatatingeWallet(
         req.user._id,
@@ -301,14 +304,14 @@ export const makeWithdrawal = async (req, res) => {
         updatedWallet?.balance
       );
 
-      await withdrawalTransaction(
+      const withdrawTrans = await withdrawalTransaction(
         accountNumber,
         accountName,
         bankCode,
         currency,
         amount,
         findUser?.businessName,
-        "pending",
+        status,
         "nuban",
         transfer_code,
         findUser?._id,
@@ -317,7 +320,8 @@ export const makeWithdrawal = async (req, res) => {
       );
 
       res.status(200).json({
-        message: "transfer pending. You will recieve it in a an hour time",
+        message: "Withdraw Completed",
+        data: withdrawTrans,
       });
     }
   } catch (error) {

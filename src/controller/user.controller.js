@@ -183,14 +183,14 @@ export const verifyEmail = async (req, res) => {
     const otpHolder = await otpModel.find({ email });
 
     if (otpHolder === 0) {
-      res.status(400).json({ message: "Expired OTP" });
+      res.status(400).json({ message: "Expired OTP", success: false });
     } else {
       const getRecentOtp = otpHolder[otpHolder.length - 1];
       const rightOtp = await bcrypt.compare(otp, getRecentOtp.otp);
 
       if (verificationKey === getRecentOtp.verificationKey) {
         if (!rightOtp) {
-          res.status(400).json({ message: "Incorrect OTP" });
+          res.status(400).json({ message: "Incorrect OTP", success: false });
         } else {
           const findUser = await userModel.findOneAndUpdate(
             { email },
@@ -198,14 +198,20 @@ export const verifyEmail = async (req, res) => {
             { new: true }
           );
           await otpModel.deleteMany({ email });
-          res.status(400).json({ message: "Email Verification Completed" });
+          res
+            .status(400)
+            .json({ message: "Email Verification Completed", success: true });
         }
       } else {
-        res.status(400).json({ message: "Invalid Verification key" });
+        res
+          .status(400)
+          .json({ message: "Invalid Verification key", success: false });
       }
     }
   } catch (error) {
-    res.status(400).json({ message: "error", error: error.message });
+    res
+      .status(400)
+      .json({ message: "error", data: error.message, success: false });
   }
 };
 

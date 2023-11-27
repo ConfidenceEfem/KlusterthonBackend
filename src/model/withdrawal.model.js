@@ -32,7 +32,6 @@ const withdrawalSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["successful", "pending", "failed"],
     },
     isPaymentCompleted: {
       type: Boolean,

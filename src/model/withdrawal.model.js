@@ -45,6 +45,12 @@ const withdrawalSchema = new Schema(
     transfer_code: {
       type: String,
     },
+    recipient_code: {
+      type: String,
+    },
+    reference: {
+      type: String,
+    },
 
     userId: {
       type: Schema.Types.ObjectId,

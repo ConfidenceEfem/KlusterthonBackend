@@ -24,18 +24,14 @@ export const sendEmailToUsers = async (email, otp, res) => {
       },
     });
 
-    console.log("hello1");
-
     const mailOptions = {
-      from: `Auth Pratice <"confidenceefem1@gmail.com">`,
+      from: `Beta Finance<"confidenceefem1@gmail.com">`,
       to: email,
       subject: `${"Email Verification"}`,
       html: `Hello there,</b> <br/><br/> This is your OTP to Verify your email on <b>Beta Finance</b>: ${otp}.<br/><br/> <i>PS: OTP expires in 5 minutes time.</i> <br/><br/><b> Thanks, from Beta Finance Team</b> `,
     };
 
     const result = transporter.sendMail(mailOptions, (err, info) => {
-      console.log("hello2");
-
       if (err) {
         console.log(err);
         console.log(err.message);

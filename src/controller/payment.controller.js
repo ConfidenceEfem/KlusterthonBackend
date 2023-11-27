@@ -10,7 +10,7 @@ import got from "got";
 import { walletTransactionModel } from "../model/walletTransaction.model.js";
 import { withdrawalModel } from "../model/withdrawal.model.js";
 
-const headers = {
+export const headers = {
   Authorization: `Bearer ${EnvironmentalVariables.PAYSTACK_SECRET_KEY} `,
   "Content-Type": "application/json",
 };
@@ -88,7 +88,9 @@ const withdrawalTransaction = async (
   status,
   type,
   transfer_code,
-  userId
+  userId,
+  recipient_code,
+  reference
 ) => {
   try {
     const transaction = await withdrawalModel.create({
@@ -102,6 +104,8 @@ const withdrawalTransaction = async (
       type,
       transfer_code,
       userId,
+      recipient_code,
+      reference,
     });
 
     return transaction;
@@ -257,6 +261,8 @@ export const makeWithdrawal = async (req, res) => {
         })
         .json();
 
+      console.log("create recipeint done", recipientData);
+
       // initialize transfer
 
       const initiateTransfer = await got
@@ -270,7 +276,9 @@ export const makeWithdrawal = async (req, res) => {
         })
         .json();
 
-      const { currency, transfer_code } = initiateTransfer.data;
+      console.log("initaite transfer done", initiateTransfer);
+
+      const { currency, transfer_code, reference } = initiateTransfer.data;
 
       const updatedWallet = await updatatingeWallet(
         req.user._id,
@@ -303,7 +311,9 @@ export const makeWithdrawal = async (req, res) => {
         "pending",
         "nuban",
         transfer_code,
-        findUser?._id
+        findUser?._id,
+        recipientData?.recipient_code,
+        reference
       );
 
       res.status(200).json({

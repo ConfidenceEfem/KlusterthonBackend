@@ -1,4 +1,6 @@
 import { withdrawalModel } from "../model/withdrawal.model.js";
+import got from "got";
+import { headers } from "./payment.controller.js";
 
 // all withdrawas
 export const getAllWithdrawal = async (req, res) => {
@@ -50,5 +52,44 @@ export const getOneWithdraw = async (req, res) => {
     res.status(201).json({ message: "One Withdraw", data: oneWithdraw });
   } catch (error) {
     res.status(400).json({ message: "error", error });
+  }
+};
+
+// disable otp from paystack
+export const disableOtp = async (req, res) => {
+  try {
+    const response = await got
+      .post(`https://api.paystack.co/transfer/disable_otp`, {
+        headers: headers,
+      })
+      .json();
+
+    console.log("otp sent", response);
+
+    res.status(201).json({ message: "Disable pending", response });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// finalize disable otp from paystack
+export const finalizeDisableOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    const response = await got
+      .post(`https://api.paystack.co/transfer/disable_otp_finalize`, {
+        headers: headers,
+        json: {
+          otp: otp,
+        },
+      })
+      .json();
+
+    console.log("otp disabled", response);
+
+    res.status(201).json({ message: "Disable", response });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 };

@@ -219,7 +219,11 @@ export const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
+    console.log("hellod");
+
     const generatedOtp = generateOtpMethod(4, false, false);
+
+    console.log("first generated otp", generatedOtp);
 
     const hashOtp = await bcyrptPassword(generatedOtp);
 
@@ -233,11 +237,11 @@ export const resendOtp = async (req, res) => {
 
     await sendEmailToUsers(email, generatedOtp, res);
 
-    console.log(generatedOtp);
+    console.log("genereated otp", generatedOtp);
 
     res.status(201).json({
       message: "Otp Resent",
-      data: { verificationKey, email },
+      data: { verificationKey, email, otp: generatedOtp },
       success: true,
     });
   } catch (error) {

@@ -101,7 +101,7 @@ export const approveTransfer = async (req, res) => {
 
     console.log(body);
 
-    res.status(200).json({ message: "Disable", body });
+    res.status(200).json({ message: "Disable", data: body });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

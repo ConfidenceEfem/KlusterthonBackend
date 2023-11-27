@@ -80,9 +80,9 @@ export const signInUser = async (req, res, next) => {
 
       res.status(400).json({ message: "Incorrect Credentail" });
     } else {
-      // if (!findUser?.isEmailVerified) {
-      //   res.status(400).json({ message: "Email not Verified" });
-      // }
+      if (!findUser?.isEmailVerified) {
+        res.status(400).json({ message: "Email not Verified" });
+      }
       const comparePassword = await bcrypt.compare(
         password,
         findUser?.password

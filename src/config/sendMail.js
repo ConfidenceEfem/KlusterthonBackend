@@ -9,7 +9,7 @@ const oAuthPass = new google.auth.OAuth2(
 );
 
 oAuthPass.setCredentials({
-  refresh_token: EnvironmentalVariables.REFRESH_TOKEN
+  refresh_token: EnvironmentalVariables.REFRESH_TOKEN,
 });
 
 export const sendEmailToUsers = async (email, otp, res) => {
@@ -20,15 +20,15 @@ export const sendEmailToUsers = async (email, otp, res) => {
       service: "gmail",
       auth: {
         user: EnvironmentalVariables.MAIL_USERNAME,
-        pass: EnvironmentalVariables.MAIL_PSWD
-      }
+        pass: EnvironmentalVariables.MAIL_PSWD,
+      },
     });
 
     const mailOptions = {
       from: `Beta Finance<"confidenceefem1@gmail.com">`,
       to: email,
       subject: `${"Email Verification"}`,
-      html: `Hello there,</b> <br/><br/> This is your OTP to Verify your email on <b>Beta Finance</b>: ${otp}.<br/><br/> <i>PS: OTP expires in 5 minutes time.</i> <br/><br/><b> Thanks, from Beta Finance Team</b> `
+      html: `Hello there,</b> <br/><br/> This is your OTP to Verify your email on <b>Beta Finance</b>: ${otp}.<br/><br/> <i>PS: OTP expires in 5 minutes time.</i> <br/><br/><b> Thanks, from Beta Finance Team</b> `,
     };
 
     const result = transporter.sendMail(mailOptions, (err, info) => {

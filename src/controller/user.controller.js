@@ -23,7 +23,7 @@ const generateOtpMethod = (
     lowerCaseAlphabets: isLowercaseAlphabet,
     upperCaseAlphabets: isUppercaseAlphabet,
     specialChars: false,
-    digits: true
+    digits: true,
   });
 
   return generateOtp;
@@ -38,7 +38,7 @@ export const registerAUser = async (req, res) => {
     const createUser = await userModel.create({
       email,
       password: hashPassword,
-      businessName
+      businessName,
     });
 
     if (createUser) {
@@ -51,7 +51,7 @@ export const registerAUser = async (req, res) => {
       await otpModel.create({
         otp: hashOtp,
         verificationKey,
-        email: email
+        email: email,
       });
 
       await sendEmailToUsers(email, generatedOtp, res);
@@ -62,7 +62,7 @@ export const registerAUser = async (req, res) => {
 
       res?.status(200).json({
         message: "User Created Successfully",
-        data: { user: createUser, email, verificationKey }
+        data: { user: createUser, email, verificationKey },
       });
     }
   } catch (error) {
@@ -104,7 +104,7 @@ export const signInUser = async (req, res, next) => {
           const refreshToken = jwt.sign(
             {
               _id: findUser?._id,
-              email: findUser?.email
+              email: findUser?.email,
             },
             EnvironmentalVariables.REFRESH_SECRET_KEY,
             { expiresIn: "2d" }
@@ -112,7 +112,7 @@ export const signInUser = async (req, res, next) => {
 
           const userData = {
             user: findUser,
-            token: { accesstoken: accesstoken, refreshToken: refreshToken }
+            token: { accesstoken: accesstoken, refreshToken: refreshToken },
           };
 
           res
@@ -159,14 +159,14 @@ export const createANewToken = async (req, res, next) => {
       const refreshToken = jwt.sign(
         {
           _id: findUser?._id,
-          email: findUser?.email
+          email: findUser?.email,
         },
         EnvironmentalVariables.REFRESH_SECRET_KEY,
         { expiresIn: "2d" }
       );
 
       const token = {
-        token: { accesstoken: accesstoken, refreshToken: refreshToken }
+        token: { accesstoken: accesstoken, refreshToken: refreshToken },
       };
 
       res.status(200).json({ message: "New token", data: token });
@@ -219,7 +219,11 @@ export const resendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
+    console.log("hellod");
+
     const generatedOtp = generateOtpMethod(4, false, false);
+
+    console.log("first generated otp", generatedOtp);
 
     const hashOtp = await bcyrptPassword(generatedOtp);
 
@@ -228,17 +232,18 @@ export const resendOtp = async (req, res) => {
     await otpModel.create({
       otp: hashOtp,
       verificationKey,
-      email: email
+      email: email,
     });
 
     await sendEmailToUsers(email, generatedOtp, res);
 
-    console.log(generatedOtp);
+    console.log("genereated otp", generatedOtp);
 
     res.status(201).json({
       message: "Otp Resent",
+
       data: { verificationKey, email },
-      success: true
+      success: true,
     });
   } catch (error) {
     res.status(400).json({ message: "error", error: error, success: false });

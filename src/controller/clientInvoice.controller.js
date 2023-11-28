@@ -67,7 +67,7 @@ const initailizePayment = async (
     .post("https://api.paystack.co/transaction/initialize", {
       headers: {
         Authorization: `Bearer ${EnvironmentalVariables.PAYSTACK_SECRET_KEY}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       json: {
         amount: amount * 100,
@@ -81,9 +81,9 @@ const initailizePayment = async (
           description: description,
           clientName: clientName,
           clientPhoneNumber,
-          userId,
-        },
-      },
+          userId
+        }
+      }
     })
     .json();
 
@@ -98,7 +98,7 @@ export const createClientInvoice = async (req, res) => {
       total,
       purchasedDate,
       productDescription,
-      currency,
+      currency
     } = req.body;
 
     const findClient = await clientModel.findById(req.params.clientId);
@@ -109,7 +109,7 @@ export const createClientInvoice = async (req, res) => {
       total,
       purchasedDate,
       productDescription,
-      currency,
+      currency
     });
 
     createInvoice.clientId = findClient;
@@ -133,13 +133,13 @@ export const createClientInvoice = async (req, res) => {
 
     createInvoice.save();
 
-    findClient.clientInvioce.push(
+    findClient.clientInvoice.push(
       new mongoose.Types.ObjectId(createInvoice._id)
     );
 
     findClient.save();
 
-    res.status(201).json({ message: "Invioce Created", data: createInvoice });
+    res.status(201).json({ message: "Invoice Created", data: createInvoice });
   } catch (error) {
     res.status(400).json({ message: "Error", error: error.message });
   }
@@ -149,7 +149,7 @@ export const getAllInvoiceForOneClient = async (req, res) => {
   try {
     const getClient = await clientModel
       .findById(req.params.clientId)
-      .populate("clientInvioce");
+      .populate("clientInvoice");
 
     res.status(200).json({ message: "Client All Invoice", data: getClient });
   } catch (error) {
@@ -175,7 +175,7 @@ export const editClientInvoice = async (req, res) => {
       req.params.invoiceId,
       {
         productName,
-        isPaid,
+        isPaid
       },
       { new: true }
     );

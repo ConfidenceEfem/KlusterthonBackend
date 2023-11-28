@@ -4,7 +4,7 @@ import {
   deleteClientInvoice,
   editClientInvoice,
   getAllInvoiceForOneClient,
-  getOneInvoice,
+  getOneInvoice
 } from "../controller/clientInvoice.controller.js";
 import { checkUser } from "../utils/checkUser.js";
 
